@@ -18,10 +18,10 @@ app.use(express.static('public'));
 async function query(data) {
     try {
         const response = await axios.post(
-            "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
+            process.env.API_URL,
             {inputs:data},
             {
-                headers: { Authorization: "Bearer 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" }
+                headers: { Authorization: `Bearer ${process.env.API_TOKEN}` }
             }
         );
         return response.data; // Assuming the structure of the response
@@ -39,11 +39,12 @@ wss.on('connection', (ws) => {
             console.log('Received message from client:', message); // Log received message
             // Parse the received message as JSON
             const parsedMessage = JSON.parse(message);
+
             // Make API call to OpenAI
             const response = await query(parsedMessage);
 
             // Parse the API response to extract the generated text
-            const generatedText = response[0].generated_text;
+            const generatedText = response[0].generated_text.substr(message.length);
             console.log('Response from OpenAI:', generatedText); 
 
             // Send the generated text back to the client over WebSocket
